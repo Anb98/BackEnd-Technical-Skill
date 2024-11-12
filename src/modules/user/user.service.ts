@@ -3,7 +3,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import { CreateUserInput } from './inputs/create-user.input'
 import { Role } from '@prisma/client'
 import { plainToInstance } from 'class-transformer'
-import { UserDto } from './dto/user'
+import { UserDto } from './dto/user.dto'
 
 @Injectable()
 export class UserService {

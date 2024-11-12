@@ -1,7 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common'
-import { UpdateProductDto } from './dto/update-product.dto'
+import { Injectable, Logger, UnprocessableEntityException } from '@nestjs/common'
 import { PrismaService } from '@modules/prisma/prisma.service'
 import { CreateProductInput } from './inputs/create-product.input'
+import { PaginationInput } from '@utils/input/pagination.input'
+import { plainToInstance } from 'class-transformer'
+import { ProductDto } from './dto/product.dto'
+import { UpdateProductInput } from './inputs/update-product.dto'
 
 @Injectable()
 export class ProductService {
@@ -28,19 +31,84 @@ export class ProductService {
     }
   }
 
-  findAll() {
-    return `This action returns all product`
+  async findAll(pagination: PaginationInput) {
+    try {
+      const [result, count] = await Promise.all([
+        this.prismaService.product.findMany({
+          where: { deletedAt: null },
+          skip: pagination.skip,
+          take: pagination.take,
+          orderBy: {
+            [pagination.orderBy || 'createdAt']: pagination.order
+          }
+        }),
+        this.prismaService.product.count({
+          where: { deletedAt: null }
+        })
+      ])
+
+      return {
+        items: plainToInstance(ProductDto, result),
+        hasNextPage: count > pagination.skip + pagination.take,
+        totalCount: count
+      }
+    } catch (error) {
+      this.logger.error(error)
+
+      throw new UnprocessableEntityException(error)
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`
+  async findOne(id: string) {
+    try {
+      const result = await this.prismaService.product.findUnique({
+        where: {
+          id: id,
+          deletedAt: null
+        }
+      })
+
+      return plainToInstance(ProductDto, result)
+    } catch (error) {
+      this.logger.error(error)
+
+      throw new UnprocessableEntityException(error)
+    }
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`
+  async update(id: string, data: UpdateProductInput) {
+    try {
+      const result = await this.prismaService.product.update({
+        data,
+        where: {
+          id
+        }
+      })
+
+      return plainToInstance(ProductDto, result)
+    } catch (error) {
+      this.logger.error(error)
+
+      throw new UnprocessableEntityException(error)
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`
+  async remove(id: string) {
+    try {
+      const result = await this.prismaService.product.update({
+        where: {
+          id: id
+        },
+        data: {
+          deletedAt: new Date()
+        }
+      })
+
+      return plainToInstance(ProductDto, result)
+    } catch (error) {
+      this.logger.error(error)
+
+      throw new UnprocessableEntityException(error)
+    }
   }
 }

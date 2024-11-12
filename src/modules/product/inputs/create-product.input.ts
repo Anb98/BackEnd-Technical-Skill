@@ -1,4 +1,4 @@
-import { IsDecimal, IsString, IsInt, IsOptional } from 'class-validator'
+import { IsString, IsInt, IsOptional, IsNumber } from 'class-validator'
 
 export class CreateProductInput {
   @IsString()
@@ -8,7 +8,7 @@ export class CreateProductInput {
   @IsOptional()
   description?: string
 
-  @IsDecimal()
+  @IsNumber()
   price: number
 
   @IsInt()
