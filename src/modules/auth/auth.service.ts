@@ -3,6 +3,7 @@ import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/co
 import { JwtService } from '@nestjs/jwt'
 import * as bcrypt from 'bcryptjs'
 import { SignupInput } from './input/signup.input'
+import { Payload } from './interfaces/payload'
 
 @Injectable()
 export class AuthService {
@@ -19,7 +20,7 @@ export class AuthService {
     const passwordMatch = await bcrypt.compare(password, user.password)
     if (!passwordMatch) throw new UnauthorizedException('invalid email or password')
 
-    const payload = { sub: user.id, username: user.email }
+    const payload: Payload = { sub: user.id, email: user.email, role: user.role }
 
     return {
       access_token: await this.jwtService.signAsync(payload)
@@ -32,7 +33,7 @@ export class AuthService {
 
     const user = await this.usersService.create({ ...data, password: hashedPassword })
 
-    const payload = { sub: user.id, username: user.email }
+    const payload: Payload = { sub: user.id, email: user.email, role: user.role }
 
     return {
       access_token: await this.jwtService.signAsync(payload)

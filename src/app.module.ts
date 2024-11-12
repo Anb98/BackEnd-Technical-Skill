@@ -10,6 +10,7 @@ import { EnvironmentVariables } from '@modules/configs/load.settings'
 import { AuthModule } from './modules/auth/auth.module'
 import { PrismaModule } from './modules/prisma/prisma.module'
 import { UserModule } from './modules/user/user.module'
+import { ProductModule } from './modules/product/product.module'
 
 @Module({
   imports: [
@@ -27,7 +28,8 @@ import { UserModule } from './modules/user/user.module'
     }),
     AuthModule,
     PrismaModule,
-    UserModule
+    UserModule,
+    ProductModule
   ],
   controllers: [AppController],
   providers: [

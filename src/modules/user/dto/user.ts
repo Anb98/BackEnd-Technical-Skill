@@ -1,3 +1,4 @@
+import { Role } from '@prisma/client'
 import { Exclude } from 'class-transformer'
 
 export class UserDto {
@@ -10,6 +11,8 @@ export class UserDto {
   readonly email: string
 
   readonly name?: string
+
+  readonly role: Role
 
   @Exclude()
   readonly password: string
