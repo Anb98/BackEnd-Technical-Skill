@@ -7,7 +7,8 @@ import { configLoad } from './load.settings'
     Config.forRoot({
       isGlobal: true,
       load: configLoad,
-      cache: true
+      cache: true,
+      expandVariables: true
     })
   ]
 })

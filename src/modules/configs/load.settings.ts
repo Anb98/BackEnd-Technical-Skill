@@ -2,7 +2,7 @@ import { ConfigType, registerAs } from '@nestjs/config'
 
 enum ConfigKey {
   App = 'APP',
-  Db = 'DB',
+  Jwt = 'JWT',
   Throttler = 'THROTTLER'
 }
 
@@ -21,9 +21,15 @@ export const ThrottlerConfig = registerAs(ConfigKey.Throttler, () => ({
   LIMIT: Number(process.env.THROTTLER_LIMIT || 10)
 }))
 
+export const JWTConfig = registerAs(ConfigKey.Jwt, () => ({
+  secret: process.env.JWT_SECRET,
+  expiresIn: process.env.JWT_EXPIRES_IN
+}))
+
 export interface EnvironmentVariables {
   APP: ConfigType<typeof APPConfig>
   THROTTLER: ConfigType<typeof ThrottlerConfig>
+  JWT: ConfigType<typeof JWTConfig>
 }
 
-export const configLoad = [APPConfig, ThrottlerConfig]
+export const configLoad = [APPConfig, ThrottlerConfig, JWTConfig]

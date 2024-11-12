@@ -7,6 +7,9 @@ import { APP_GUARD } from '@nestjs/core'
 import { ConfigModule } from './modules/configs/config.module'
 import { ConfigService } from '@nestjs/config'
 import { EnvironmentVariables } from '@modules/configs/load.settings'
+import { AuthModule } from './modules/auth/auth.module'
+import { PrismaModule } from './modules/prisma/prisma.module'
+import { UserModule } from './modules/user/user.module'
 
 @Module({
   imports: [
@@ -21,7 +24,10 @@ import { EnvironmentVariables } from '@modules/configs/load.settings'
           }
         ]
       })
-    })
+    }),
+    AuthModule,
+    PrismaModule,
+    UserModule
   ],
   controllers: [AppController],
   providers: [
