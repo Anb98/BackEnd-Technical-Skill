@@ -10,7 +10,7 @@ import { Payload } from '@modules/auth/interfaces/payload'
 import { PaginationInput } from '@utils/input/pagination.input'
 import { UpdateProductInput } from './inputs/update-product.dto'
 
-@Controller('product')
+@Controller('products')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 

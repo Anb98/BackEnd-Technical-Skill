@@ -5,6 +5,8 @@ import { PaginationInput } from '@utils/input/pagination.input'
 import { plainToInstance } from 'class-transformer'
 import { ProductDto } from './dto/product.dto'
 import { UpdateProductInput } from './inputs/update-product.dto'
+import { Prisma, PrismaClient } from '@prisma/client'
+import { DefaultArgs } from '@prisma/client/runtime/library'
 
 @Injectable()
 export class ProductService {
@@ -31,11 +33,11 @@ export class ProductService {
     }
   }
 
-  async findAll(pagination: PaginationInput) {
+  async findAll(pagination: PaginationInput, ids?: string[]) {
     try {
       const [result, count] = await Promise.all([
         this.prismaService.product.findMany({
-          where: { deletedAt: null },
+          where: { deletedAt: null, ...(ids && { id: { in: ids } }) },
           skip: pagination.skip,
           take: pagination.take,
           orderBy: {
@@ -110,5 +112,52 @@ export class ProductService {
 
       throw new UnprocessableEntityException(error)
     }
+  }
+
+  async increaseStock(productId: string, quantity: number) {
+    try {
+      return this.prismaService.product.update({
+        where: {
+          id: productId
+        },
+        data: {
+          stock: {
+            increment: quantity
+          }
+        }
+      })
+    } catch (error) {
+      this.logger.error(error)
+
+      throw new UnprocessableEntityException(error)
+    }
+  }
+
+  decreaseStock(
+    productId: string,
+    quantity: number,
+    tx?: Omit<
+      PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>,
+      '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
+    >
+  ) {
+    return this.prismaService.$transaction(async (_tx) => {
+      const product = await (tx || _tx).product.update({
+        where: {
+          id: productId
+        },
+        data: {
+          stock: {
+            decrement: quantity
+          }
+        }
+      })
+
+      if (product.stock < 0) {
+        throw new UnprocessableEntityException('Insufficient Stock')
+      }
+
+      return product
+    })
   }
 }
