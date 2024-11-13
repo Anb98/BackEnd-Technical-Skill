@@ -26,6 +26,70 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## Roadmap
+
+- **User Management**
+
+  - [x] `POST /register`: Register user.
+  - [x] `POST /login`: Login and return JWT.
+
+- **Product Management**
+
+  - [x] `GET /products`: List all products.
+  - [x] `GET /products/{id}`: Product details.
+  - [x] `POST`, `PUT`, `DELETE /products`: Manage products (auth required).
+
+- **Order Management**
+
+  - [x] `POST /orders`: Place order (auth required).
+  - [x] `GET /orders/{id}`: Order details (auth required).
+  - [x] `GET /orders`: List user orders (auth required).
+
+- **Authentication & Authorization**
+
+  - [x] Use JWT for authentication.
+  - [x] Protect product and order endpoints.
+
+- **Product Catalog**
+
+  - [x] Product attributes: id, name, description, price, stock, createdAt, updatedAt.
+
+- **Order Processing & Payment Simulation**
+
+  - [x] Deduct stock upon order, simulate async payment, restore stock on failure.
+
+- **Asynchronous Processing**
+
+  - [x] Use job queue for async order processing and retries on payment failure.
+
+- **Error Handling & Edge Cases**
+
+  - [x] Handle insufficient stock, unauthorized access, invalid input.
+  - [x] Ensure idempotency in order processing.
+
+- **Optimizations**
+
+  - [x] Caching (e.g., Redis) for frequent GET requests.
+  - [x] Pagination, indexing for efficient database queries.
+
+- **Bonus Features**
+
+  - [x] WebSocket for real-time notifications.
+  - [x] Rate limiting for login and API requests.
+
+- **Stack & Authentication**
+
+  - [x] Use NestJS, PostgreSQL, Redis
+  - [x] JWT or Auth0 for authentication.
+
+- **Asynchronous Processing & Data Consistency**
+
+  - [x] Redis for job queue; exponential backoff on failures.
+  - [x] Use transactions or compensatory actions for consistency.
+
+- **Testing**
+  - [ ] Write unit tests (auth, product mgmt) and integration tests (order, payment).
+
 ## Installation
 
 ```bash
@@ -35,14 +99,41 @@ $ yarn install
 ## Running the app
 
 ```bash
-# development
-$ yarn run start
+# run migrations
+$ yarn prisma:migrate:run
 
-# watch mode
-$ yarn run start:dev
+# run seeder to create a default admin user with default password: password
+$ yarn prisma db seed
 
 # production mode
 $ yarn run start:prod
+
+
+# For development mode first run to generate prisma models
+$ yarn prisma:generate
+
+# Then run
+$ yarn run start:dev
+
+```
+
+## Other Database set up
+
+```bash
+# create new migration
+$ yarn prisma:migrate:save
+
+# run migrations
+$ yarn prisma:migrate:run
+
+# run seeder to create a default admin user with default password: password
+$ yarn prisma db seed
+
+# generate models
+$ yarn prisma:generate
+
+# reset database
+$ yarn prisma:migrate:reset
 ```
 
 ## Test
@@ -57,6 +148,44 @@ $ yarn run test:e2e
 # test coverage
 $ yarn run test:cov
 ```
+
+## Endpoints
+
+This repository includes a `Postman collection` named: `Skill test - HTTP.postman_collection.json`. Import it into `Postman` to test all available endpoints
+
+## Websocket
+
+### Headers
+
+Header of the websocket connection should include the following values:
+
+```json
+{
+  "Authorization": "Bearer your-jwt-token"
+}
+```
+
+### Order Status
+
+To get Order status updates these are the details:
+
+#### Connection Details
+
+- Server URL: `ws://localhost:3000`
+- Namespace: `/orders`
+- Event name: `status`
+- Transport: Socket.IO (WebSocket with fallback mechanisms)
+
+### Payment Status
+
+To get Payment status updates these are the details:
+
+#### Connection Details
+
+- Server URL: `ws://localhost:3000`
+- Namespace: `/payment`
+- Event name: `status`
+- Transport: Socket.IO (WebSocket with fallback mechanisms)
 
 ## Support
 
