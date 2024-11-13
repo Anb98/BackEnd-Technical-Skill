@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query, Put } from '@nestjs/common'
+import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query, Put, UseInterceptors } from '@nestjs/common'
 import { ProductService } from './product.service'
 import { CreateProductInput } from './inputs/create-product.input'
 import { AuthGuard } from '@guards/auth.guard'
@@ -9,6 +9,7 @@ import { GetUser } from '@decorators/get-user.decorator'
 import { Payload } from '@modules/auth/interfaces/payload'
 import { PaginationInput } from '@utils/input/pagination.input'
 import { UpdateProductInput } from './inputs/update-product.dto'
+import { CacheInterceptor } from '@nestjs/cache-manager'
 
 @Controller('products')
 export class ProductController {
@@ -22,12 +23,14 @@ export class ProductController {
   }
 
   @UseGuards(AuthGuard)
+  @UseInterceptors(CacheInterceptor)
   @Get()
   findAll(@Query() pagination: PaginationInput) {
     return this.productService.findAll(pagination)
   }
 
   @UseGuards(AuthGuard, RolesGuard)
+  @UseInterceptors(CacheInterceptor)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.productService.findOne(id)

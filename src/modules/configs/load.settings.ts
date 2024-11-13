@@ -29,7 +29,8 @@ export const JWTConfig = registerAs(ConfigKey.Jwt, () => ({
 
 export const RedisConfig = registerAs(ConfigKey.Redis, () => ({
   host: process.env.REDIS_HOST,
-  port: Number(process.env.REDIS_PORT || 6379)
+  port: Number(process.env.REDIS_PORT || 6379),
+  timeToLive: Number(process.env.REDIS_TTL || 60000)
 }))
 
 export interface EnvironmentVariables {

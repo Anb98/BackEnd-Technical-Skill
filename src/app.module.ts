@@ -14,6 +14,8 @@ import { ProductModule } from './modules/product/product.module'
 import { OrderModule } from './modules/order/order.module'
 import { BullModule } from '@nestjs/bull'
 import { PaymentModule } from './modules/payment/payment.module'
+import { CacheModule, CacheStore } from '@nestjs/cache-manager'
+import { redisStore } from 'cache-manager-redis-yet'
 
 @Module({
   imports: [
@@ -37,6 +39,23 @@ import { PaymentModule } from './modules/payment/payment.module'
           }
         ]
       })
+    }),
+    CacheModule.registerAsync({
+      inject: [ConfigService],
+      isGlobal: true,
+      useFactory: async (config: ConfigService<EnvironmentVariables, true>) => {
+        const store = await redisStore({
+          socket: {
+            host: config.get('REDIS.host', { infer: true }),
+            port: config.get('REDIS.port', { infer: true })
+          }
+        })
+
+        return {
+          store: store as unknown as CacheStore,
+          ttl: config.get('THROTTLER.Limit', { infer: true })
+        }
+      }
     }),
     AuthModule,
     PrismaModule,
