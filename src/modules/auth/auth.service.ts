@@ -39,4 +39,17 @@ export class AuthService {
       access_token: await this.jwtService.signAsync(payload)
     }
   }
+
+  async validateToken(bearerToken: string): Promise<Payload> {
+    const [type, token] = bearerToken.split(' ') ?? []
+
+    if (type !== 'Bearer') throw new UnauthorizedException('invalid token')
+
+    try {
+      const payload = await this.jwtService.verifyAsync(token)
+      return payload
+    } catch {
+      throw new UnauthorizedException()
+    }
+  }
 }

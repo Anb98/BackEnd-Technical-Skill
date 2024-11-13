@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { InjectQueue } from '@nestjs/bull'
 import { PAYMENT_QUEUE_NAME } from '@constants/queue'
 import { Queue } from 'bull'
-import { CreatePaymentInput } from './input/create-payment.input'
+import { CreateJobPaymentInput } from './input/create-job-payment.input'
 
 @Injectable()
 export class PaymentService {
@@ -10,7 +10,7 @@ export class PaymentService {
 
   constructor(@InjectQueue(PAYMENT_QUEUE_NAME) private paymentQueue: Queue) {}
 
-  createPayment(data: CreatePaymentInput) {
+  createPayment(data: CreateJobPaymentInput) {
     return this.paymentQueue.add(data, {
       backoff: this.backoff
     })

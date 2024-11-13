@@ -69,7 +69,7 @@ export class OrderService {
       })
 
       const order = plainToInstance(OrderDto, result)
-      this.orderQueue.add(order)
+      this.orderQueue.add({ ...order, createdBy })
 
       return order
     } catch (error) {

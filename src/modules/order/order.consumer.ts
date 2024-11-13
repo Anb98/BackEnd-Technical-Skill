@@ -4,11 +4,12 @@ import { ProductService } from '@modules/product/product.service'
 import { OnQueueActive, OnQueueCompleted, OnQueueFailed, Process, Processor } from '@nestjs/bull'
 import { Logger } from '@nestjs/common'
 import { Job } from 'bull'
-import { OrderDto } from './dto/order.dto'
 import { OrderStatus } from '@prisma/client'
 import { PaymentService } from '@modules/payment/payment.service'
 import { AllowedPaymentMethods } from '@modules/payment/enums'
 import { PaymentRequest } from '@modules/payment/interfaces'
+import { OrderGateway } from './order.gateway'
+import { OrderJobDto } from './dto/order-job.dto'
 
 @Processor(ORDER_QUEUE_NAME)
 export class OrderConsumer {
@@ -17,14 +18,16 @@ export class OrderConsumer {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly productService: ProductService,
-    private readonly paymentService: PaymentService
+    private readonly paymentService: PaymentService,
+    private readonly orderGateway: OrderGateway
   ) {
     this.logger = new Logger(OrderConsumer.name)
   }
 
   @Process()
-  async processOrder(job: Job<OrderDto>) {
+  async processOrder(job: Job<OrderJobDto>) {
     const paymentJob = await this.paymentService.createPayment({
+      createdBy: job.data.createdBy,
       amount: job.data.orderItems.reduce((acc, item) => acc + item.price * item.quantity, 0),
       currency: 'USD',
       paymentMethod: AllowedPaymentMethods.TEST_PAYMENT
@@ -37,7 +40,7 @@ export class OrderConsumer {
   }
 
   @OnQueueActive()
-  async onActive(job: Job<OrderDto>) {
+  async onActive(job: Job<OrderJobDto>) {
     try {
       await this.prismaService.order.update({
         where: {
@@ -53,9 +56,10 @@ export class OrderConsumer {
   }
 
   @OnQueueFailed()
-  async onFailed(job: Job<OrderDto>, err: Error) {
-    this.logger.error(err)
+  async onFailed(job: Job<OrderJobDto>, err: Error) {
     try {
+      this.orderGateway.updateOrderStatus({ ...job.data, status: OrderStatus.FAILED })
+      this.logger.error(err)
       await Promise.all([
         this.prismaService.order.update({
           where: {
@@ -73,8 +77,9 @@ export class OrderConsumer {
   }
 
   @OnQueueCompleted()
-  async onCompleted(job: Job<OrderDto>) {
+  async onCompleted(job: Job<OrderJobDto>) {
     try {
+      this.orderGateway.updateOrderStatus({ ...job.data, status: OrderStatus.COMPLETED })
       await this.prismaService.order.update({
         where: {
           id: job.data.id

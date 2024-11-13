@@ -9,6 +9,7 @@ import { BullModule } from '@nestjs/bull'
 import { ORDER_QUEUE_NAME } from '@constants/queue'
 import { OrderConsumer } from './order.consumer'
 import { PaymentModule } from '@modules/payment/payment.module'
+import { OrderGateway } from './order.gateway'
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { PaymentModule } from '@modules/payment/payment.module'
       name: ORDER_QUEUE_NAME
     })
   ],
-  providers: [OrderService, JwtService, OrderConsumer],
+  providers: [OrderService, JwtService, OrderConsumer, OrderGateway],
   controllers: [OrderController]
 })
 export class OrderModule {}

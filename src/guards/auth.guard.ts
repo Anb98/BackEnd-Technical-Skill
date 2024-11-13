@@ -1,8 +1,9 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common'
-import { Request } from 'express'
 import { ConfigService } from '@nestjs/config'
+import { Request } from 'express'
 import { EnvironmentVariables } from '@modules/configs/load.settings'
 import { JwtService } from '@nestjs/jwt'
+import { Socket } from 'socket.io'
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -28,8 +29,14 @@ export class AuthGuard implements CanActivate {
     return true
   }
 
-  private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? []
+  private isSocketRequest(request: Request | Socket): request is Socket {
+    return !!(request as Socket).handshake
+  }
+
+  private extractTokenFromHeader(request: Request | Socket): string | undefined {
+    const isWS = this.isSocketRequest(request)
+    const [type, token] =
+      (isWS ? request.handshake.headers.authorization : request.headers.authorization)?.split(' ') ?? []
     return type === 'Bearer' ? token : undefined
   }
 }
