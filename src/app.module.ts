@@ -12,17 +12,28 @@ import { PrismaModule } from './modules/prisma/prisma.module'
 import { UserModule } from './modules/user/user.module'
 import { ProductModule } from './modules/product/product.module'
 import { OrderModule } from './modules/order/order.module'
+import { BullModule } from '@nestjs/bull'
+import { PaymentModule } from './modules/payment/payment.module'
 
 @Module({
   imports: [
     ConfigModule,
+    BullModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService<EnvironmentVariables, true>) => ({
+        redis: {
+          host: config.get('REDIS.host', { infer: true }),
+          port: config.get('REDIS.port', { infer: true })
+        }
+      })
+    }),
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService<EnvironmentVariables, true>): ThrottlerModuleOptions => ({
         throttlers: [
           {
-            ttl: config.get('THROTTLER.TIME_TO_LIVE', { infer: true }),
-            limit: config.get('THROTTLER.LIMIT', { infer: true })
+            ttl: config.get('THROTTLER.TimeToLive', { infer: true }),
+            limit: config.get('THROTTLER.Limit', { infer: true })
           }
         ]
       })
@@ -31,7 +42,8 @@ import { OrderModule } from './modules/order/order.module'
     PrismaModule,
     UserModule,
     ProductModule,
-    OrderModule
+    OrderModule,
+    PaymentModule
   ],
   controllers: [AppController],
   providers: [

@@ -78,7 +78,7 @@ model OrderItem {
 enum OrderStatus {
   PENDING
   PROCESSING
-  PAID
-  PAYMENT_FAILED
+  COMPLETED
+  FAILED
   CANCELLED
 }

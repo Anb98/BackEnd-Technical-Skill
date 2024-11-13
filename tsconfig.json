@@ -20,6 +20,7 @@
     "esModuleInterop": true,
     "paths": {
       "@modules/*": ["./src/modules/*"],
+      "@constants/*": ["./src/constants/*"],
       "@guards/*": ["./src/guards/*"],
       "@decorators/*": ["./src/decorators/*"],
       "@utils/*": ["./src/utils/*"]

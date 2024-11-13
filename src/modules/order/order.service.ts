@@ -5,12 +5,17 @@ import { PaginationInput } from '@utils/input/pagination.input'
 import { plainToInstance } from 'class-transformer'
 import { OrderDto } from './dto/order.dto'
 import { ProductService } from '@modules/product/product.service'
+import { InjectQueue } from '@nestjs/bull'
+import { Queue } from 'bull'
+import { ORDER_QUEUE_NAME } from '@constants/queue'
+import { OrderStatus } from '@prisma/client'
 
 @Injectable()
 export class OrderService {
   private readonly logger: Logger
 
   constructor(
+    @InjectQueue(ORDER_QUEUE_NAME) private orderQueue: Queue,
     private readonly prismaService: PrismaService,
     private readonly productService: ProductService
   ) {
@@ -29,7 +34,7 @@ export class OrderService {
       const result = await this.prismaService.$transaction(async (tx) => {
         const result = await tx.order.create({
           data: {
-            status: 'PENDING',
+            status: OrderStatus.PENDING,
             orderItems: {
               create: data.items.map((item, i) => ({
                 quantity: item.quantity,
@@ -63,7 +68,10 @@ export class OrderService {
         return result
       })
 
-      return plainToInstance(OrderDto, result)
+      const order = plainToInstance(OrderDto, result)
+      this.orderQueue.add(order)
+
+      return order
     } catch (error) {
       this.logger.error(error)
 

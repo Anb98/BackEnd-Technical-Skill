@@ -3,7 +3,8 @@ import { ConfigType, registerAs } from '@nestjs/config'
 enum ConfigKey {
   App = 'APP',
   Jwt = 'JWT',
-  Throttler = 'THROTTLER'
+  Throttler = 'THROTTLER',
+  Redis = 'REDIS'
 }
 
 enum Environment {
@@ -17,8 +18,8 @@ export const APPConfig = registerAs(ConfigKey.App, () => ({
 }))
 
 export const ThrottlerConfig = registerAs(ConfigKey.Throttler, () => ({
-  TIME_TO_LIVE: Number(process.env.THROTTLER_TTL || 60000),
-  LIMIT: Number(process.env.THROTTLER_LIMIT || 10)
+  TimeToLive: Number(process.env.THROTTLER_TTL || 60000),
+  Limit: Number(process.env.THROTTLER_LIMIT || 10)
 }))
 
 export const JWTConfig = registerAs(ConfigKey.Jwt, () => ({
@@ -26,10 +27,16 @@ export const JWTConfig = registerAs(ConfigKey.Jwt, () => ({
   expiresIn: process.env.JWT_EXPIRES_IN
 }))
 
+export const RedisConfig = registerAs(ConfigKey.Redis, () => ({
+  host: process.env.REDIS_HOST,
+  port: Number(process.env.REDIS_PORT || 6379)
+}))
+
 export interface EnvironmentVariables {
   APP: ConfigType<typeof APPConfig>
   THROTTLER: ConfigType<typeof ThrottlerConfig>
   JWT: ConfigType<typeof JWTConfig>
+  REDIS: ConfigType<typeof RedisConfig>
 }
 
-export const configLoad = [APPConfig, ThrottlerConfig, JWTConfig]
+export const configLoad = [APPConfig, ThrottlerConfig, JWTConfig, RedisConfig]
